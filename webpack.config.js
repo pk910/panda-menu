@@ -10,16 +10,16 @@ module.exports = (env, argv) => {
   const hasReleaseFiles = fs.existsSync(releaseDir) &&
     fs.readdirSync(releaseDir).length > 0;
 
-  const plugins = [];
+  const copyPatterns = [
+    { from: 'public', to: '.' },
+  ];
   if (hasReleaseFiles) {
-    plugins.push(
-      new CopyPlugin({
-        patterns: [
-          { from: 'release', to: '.' },
-        ],
-      })
-    );
+    copyPatterns.push({ from: 'release', to: '.' });
   }
+
+  const plugins = [
+    new CopyPlugin({ patterns: copyPatterns }),
+  ];
 
   return {
     entry: './src/index.tsx',
@@ -31,6 +31,12 @@ module.exports = (env, argv) => {
     plugins,
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
+      alias: {
+        'react': 'preact/compat',
+        'react-dom': 'preact/compat',
+        'react-dom/client': 'preact/compat/client',
+        'react/jsx-runtime': 'preact/jsx-runtime',
+      },
     },
     module: {
       rules: [

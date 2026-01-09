@@ -1,8 +1,8 @@
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { PandaMenu, PandaMenuHandle } from './components/PandaMenu';
 import { getMenuCss, getAttachSelector, getAttachParent, getHostCss } from './config/hostStyles';
 import styles from './styles/index.css?inline';
-import { createRef } from 'react';
+import { createRef, RefObject } from 'react';
 
 const POLL_INTERVAL = 50; // ms
 const POLL_TIMEOUT = 5000; // ms
@@ -10,10 +10,11 @@ const MAX_ATTEMPTS = POLL_TIMEOUT / POLL_INTERVAL;
 
 const MENU_ELEMENT_ID = 'panda-menu-root';
 const STYLE_ELEMENT_ID = 'panda-menu-host-styles';
+
 interface RenderResult {
   hostElement: HTMLElement;
-  root: Root;
-  menuRef: React.RefObject<PandaMenuHandle | null>;
+  root: ReturnType<typeof createRoot>;
+  menuRef: RefObject<PandaMenuHandle | null>;
   attachTarget: HTMLElement | null;
   clickHandler: ((e: MouseEvent) => void) | null;
 }
@@ -180,7 +181,7 @@ ${getHostCss()}
   document.head.appendChild(styleElement);
 }
 
-(function initPandaMenu() {
+function initPandaMenu() {
   if (document.getElementById('panda-menu-root')) {
     return;
   }
@@ -197,4 +198,11 @@ ${getHostCss()}
     // No attach selector, render immediately in floating mode
     currentRender = renderMenu(null);
   }
-})();
+}
+
+// Wait for DOM to be ready before initializing
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPandaMenu);
+} else {
+  initPandaMenu();
+}
