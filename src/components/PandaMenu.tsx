@@ -3,7 +3,8 @@ import { useTheme } from '../hooks/useTheme';
 import { useNetworksData } from '../hooks/useNetworksData';
 import { LOGO_DATA_URL } from '../config/logo';
 import { MenuDropdown } from './MenuDropdown';
-import type { MenuMode, SidebarConfig, DisplayStyle } from '../config/hostStyles';
+import type { MenuMode, SidebarConfig, DisplayStyle, MenuSize } from '../config/hostStyles';
+import { getMenuWidth } from '../config/hostStyles';
 
 export interface PandaMenuHandle {
   toggle: () => void;
@@ -20,11 +21,14 @@ interface PandaMenuProps {
   sidebarConfig?: SidebarConfig;
   /** Display style - 'adjacent' shows next to trigger, 'modal' shows centered with overlay */
   displayStyle?: DisplayStyle;
+  /** Menu size preset - 'compact', 'normal', 'large' */
+  menuSize?: MenuSize;
 }
 
 export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
-  function PandaMenu({ mode = 'floating', attachTargetHeight = 0, sidebarConfig = {}, displayStyle = 'adjacent' }, ref) {
+  function PandaMenu({ mode = 'floating', attachTargetHeight = 0, sidebarConfig = {}, displayStyle = 'adjacent', menuSize = 'normal' }, ref) {
     const theme = useTheme();
+    const menuWidth = getMenuWidth(menuSize);
     const [isOpen, setIsOpen] = useState(false);
     const { loading, error, currentLocation, sortedCategories, retry } =
       useNetworksData(isOpen);
@@ -92,7 +96,7 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
             {/* Modal: centered dropdown */}
             {isModal && isOpen && (
               <div className="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none">
-                <div className="pointer-events-auto w-80 max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl">
+                <div className="pointer-events-auto max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl" style={{ width: menuWidth }}>
                   <MenuDropdown
                     loading={loading}
                     error={error}
@@ -117,7 +121,7 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
                   transition-all duration-200 ease-out
                 `}
                 style={{
-                  width: isExpandedAdjacent ? 320 : 96,
+                  width: isExpandedAdjacent ? menuWidth : 96,
                   height: isExpandedAdjacent ? 'auto' : collapsedWidth,
                   maxHeight: isExpandedAdjacent ? 'min(80vh, 600px)' : undefined
                 }}
@@ -220,7 +224,7 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
           {/* Modal: centered dropdown */}
           {isModal && isOpen && (
             <div className="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none">
-              <div className="pointer-events-auto w-80 max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl">
+              <div className="pointer-events-auto max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl" style={{ width: menuWidth }}>
                 <MenuDropdown
                   loading={loading}
                   error={error}
@@ -246,7 +250,7 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
                 transition-all duration-200 ease-out
               `}
               style={{
-                width: isExpandedAdjacent ? 320 : collapsedWidth,
+                width: isExpandedAdjacent ? menuWidth : collapsedWidth,
                 height: isExpandedAdjacent ? 600 : 96
               }}
             >
@@ -326,8 +330,8 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
             aria-hidden="true"
           />
           <div
-            className="absolute left-0 z-[999999] w-80 overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl"
-            style={{ top: `${attachTargetHeight + 4}px` }}
+            className="absolute left-0 z-[999999] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl"
+            style={{ top: `${attachTargetHeight + 4}px`, width: menuWidth }}
           >
             <MenuDropdown
               loading={loading}
@@ -337,6 +341,36 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
               onClose={handleClose}
               onRetry={retry}
             />
+          </div>
+        </div>
+      );
+    }
+
+    // Hidden mode: no visible button, only keyboard toggle
+    if (mode === 'hidden') {
+      if (!isOpen) {
+        // Render nothing visible, but component stays mounted for keyboard events
+        return <div className={`font-sans ${themeClass}`} />;
+      }
+
+      return (
+        <div className={`font-sans ${themeClass}`}>
+          <div
+            className="fixed inset-0 z-[999998] bg-black/50"
+            onClick={handleClose}
+            aria-hidden="true"
+          />
+          <div className="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl" style={{ width: menuWidth }}>
+              <MenuDropdown
+                loading={loading}
+                error={error}
+                sortedCategories={sortedCategories}
+                currentLocation={currentLocation}
+                onClose={handleClose}
+                onRetry={retry}
+              />
+            </div>
           </div>
         </div>
       );
@@ -373,7 +407,7 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
             {/* Menu dropdown - centered for modal, positioned for adjacent */}
             {isModal ? (
               <div className="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none">
-                <div className="pointer-events-auto w-80 max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl">
+                <div className="pointer-events-auto max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl" style={{ width: menuWidth }}>
                   <MenuDropdown
                     loading={loading}
                     error={error}
@@ -385,7 +419,7 @@ export const PandaMenu = forwardRef<PandaMenuHandle, PandaMenuProps>(
                 </div>
               </div>
             ) : (
-              <div className="absolute left-0 top-14 w-80 overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl">
+              <div className="absolute left-0 top-14 overflow-hidden rounded-lg border border-menu-border bg-menu-bg shadow-2xl" style={{ width: menuWidth }}>
                 <MenuDropdown
                   loading={loading}
                   error={error}

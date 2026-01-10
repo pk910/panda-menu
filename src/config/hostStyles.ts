@@ -1,6 +1,7 @@
 export type ColorMode = 'light' | 'dark' | '';
-export type MenuMode = 'floating' | 'sidebar' | 'attached';
+export type MenuMode = 'floating' | 'sidebar' | 'attached' | 'hidden';
 export type DisplayStyle = 'adjacent' | 'modal';
+export type MenuSize = 'compact' | 'normal' | 'large' | 'xlarge';
 
 export interface SidebarConfig {
   /** Position along the edge - defaults to 'center'
@@ -28,6 +29,8 @@ export interface HostRule {
   sidebarConfig?: SidebarConfig;
   /** Display style - 'adjacent' shows menu next to trigger, 'modal' shows centered with overlay */
   displayStyle?: DisplayStyle;
+  /** Menu size preset - 'compact' (256px), 'normal' (320px), 'large' (384px) */
+  menuSize?: MenuSize;
 }
 
 const HOST_RULES: HostRule[] = [
@@ -246,5 +249,25 @@ export function getDisplayStyle(): DisplayStyle {
     }
   }
   return 'adjacent';
+}
+
+export function getMenuSize(): MenuSize {
+  const rules = getHostConfig();
+  for (const rule of rules) {
+    if (rule.menuSize) {
+      return rule.menuSize;
+    }
+  }
+  return 'normal';
+}
+
+export function getMenuWidth(size: MenuSize): number {
+  const widths: Record<MenuSize, number> = {
+    compact: 356,
+    normal: 420,
+    large: 484,
+    xlarge: 548,
+  };
+  return widths[size];
 }
 

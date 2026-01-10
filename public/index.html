@@ -155,6 +155,14 @@
             border-color: rgba(96, 165, 250, 0.4);
             color: #60a5fa;
         }
+        .toggle-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .toggle-btn:disabled:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
         .toggle-btn svg {
             width: 24px;
             height: 24px;
@@ -227,7 +235,7 @@
         </div>
 
         <div class="card">
-            <h2>Menu Position</h2>
+            <h2>Button Position</h2>
             <div class="toggle-group">
                 <button id="btn-floating" class="toggle-btn active" onclick="setMenuMode('floating')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -242,6 +250,13 @@
                         <path d="M10 8h11M10 12h11M10 16h11"/>
                     </svg>
                     <span class="label">Sidebar</span>
+                </button>
+                <button id="btn-hidden" class="toggle-btn" onclick="setMenuMode('hidden')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                    <span class="label">Hidden</span>
                 </button>
             </div>
             <div id="sidebar-options" class="sidebar-options" style="display: none;">
@@ -350,6 +365,41 @@
         </div>
 
         <div class="card">
+            <h2>Menu Size</h2>
+            <div class="toggle-group">
+                <button id="btn-compact" class="toggle-btn" onclick="setMenuSize('compact')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="12" height="16" rx="1"/>
+                        <path d="M9 8h6M9 12h6M9 16h4"/>
+                    </svg>
+                    <span class="label">Compact</span>
+                </button>
+                <button id="btn-normal" class="toggle-btn active" onclick="setMenuSize('normal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="3" width="16" height="18" rx="1"/>
+                        <path d="M7 7h10M7 11h10M7 15h8"/>
+                    </svg>
+                    <span class="label">Normal</span>
+                </button>
+                <button id="btn-large" class="toggle-btn" onclick="setMenuSize('large')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="1"/>
+                        <path d="M5 6h14M5 10h14M5 14h12M5 18h8"/>
+                    </svg>
+                    <span class="label">Large</span>
+                </button>
+                <button id="btn-xlarge" class="toggle-btn" onclick="setMenuSize('xlarge')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="1" width="22" height="22" rx="1"/>
+                        <path d="M4 5h16M4 9h16M4 13h14M4 17h10M4 21h6"/>
+                    </svg>
+                    <span class="label">X Large</span>
+                </button>
+            </div>
+            <p class="note">Compact: 356px, Normal: 420px, Large: 484px, X Large: 548px</p>
+        </div>
+
+        <div class="card">
             <h2>Latest Release</h2>
             <div id="version-info" class="loading">Loading version info...</div>
         </div>
@@ -442,17 +492,20 @@
         let currentPosition = urlParams.get('position') || 'center';
         let currentSide = urlParams.get('side') || 'left';
         let currentDisplayStyle = urlParams.get('display') || 'adjacent';
+        let currentMenuSize = urlParams.get('size') || 'normal';
 
         // Validate params
-        if (!['floating', 'sidebar'].includes(currentMode)) currentMode = 'floating';
+        if (!['floating', 'sidebar', 'hidden'].includes(currentMode)) currentMode = 'floating';
         if (!['left', 'top', 'right', 'bottom'].includes(currentSide)) currentSide = 'left';
         if (!['top', 'center', 'bottom', 'left', 'right'].includes(currentPosition)) currentPosition = 'center';
         if (!['adjacent', 'modal'].includes(currentDisplayStyle)) currentDisplayStyle = 'adjacent';
+        if (!['compact', 'normal', 'large', 'xlarge'].includes(currentMenuSize)) currentMenuSize = 'normal';
 
         function updateUrlParams() {
             const params = new URLSearchParams();
             params.set('mode', currentMode);
             params.set('display', currentDisplayStyle);
+            params.set('size', currentMenuSize);
             if (currentMode === 'sidebar') {
                 params.set('side', currentSide);
                 params.set('position', currentPosition);
@@ -465,6 +518,7 @@
             // Set initial button states
             document.getElementById('btn-floating').classList.toggle('active', currentMode === 'floating');
             document.getElementById('btn-sidebar').classList.toggle('active', currentMode === 'sidebar');
+            document.getElementById('btn-hidden').classList.toggle('active', currentMode === 'hidden');
 
             // Show/hide sidebar options
             document.getElementById('sidebar-options').style.display = currentMode === 'sidebar' ? 'block' : 'none';
@@ -483,14 +537,26 @@
             // Set position buttons
             updatePositionButtons();
 
+            // Hidden mode forces modal display style
+            if (currentMode === 'hidden') {
+                currentDisplayStyle = 'modal';
+                document.getElementById('btn-adjacent').disabled = true;
+            }
+
             // Set display style buttons
             document.getElementById('btn-adjacent').classList.toggle('active', currentDisplayStyle === 'adjacent');
             document.getElementById('btn-modal').classList.toggle('active', currentDisplayStyle === 'modal');
 
+            // Set menu size buttons
+            document.getElementById('btn-compact').classList.toggle('active', currentMenuSize === 'compact');
+            document.getElementById('btn-normal').classList.toggle('active', currentMenuSize === 'normal');
+            document.getElementById('btn-large').classList.toggle('active', currentMenuSize === 'large');
+            document.getElementById('btn-xlarge').classList.toggle('active', currentMenuSize === 'xlarge');
+
             // Render menu with initial settings
             if (window.PandaMenu) {
                 window.PandaMenu.cleanup();
-                window.PandaMenu.render(null, currentMode, currentMode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, currentDisplayStyle);
+                window.PandaMenu.render(null, currentMode, currentMode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, currentDisplayStyle, currentMenuSize);
             }
         }
 
@@ -505,14 +571,30 @@
             // Update button states
             document.getElementById('btn-floating').classList.toggle('active', mode === 'floating');
             document.getElementById('btn-sidebar').classList.toggle('active', mode === 'sidebar');
+            document.getElementById('btn-hidden').classList.toggle('active', mode === 'hidden');
 
             // Show/hide sidebar options
             document.getElementById('sidebar-options').style.display = mode === 'sidebar' ? 'block' : 'none';
 
+            // Hidden mode forces modal display style, Sidebar defaults to adjacent
+            if (mode === 'hidden') {
+                currentDisplayStyle = 'modal';
+                document.getElementById('btn-adjacent').classList.remove('active');
+                document.getElementById('btn-adjacent').disabled = true;
+                document.getElementById('btn-modal').classList.add('active');
+            } else {
+                document.getElementById('btn-adjacent').disabled = false;
+                if (mode === 'sidebar' || mode === 'floating') {
+                    currentDisplayStyle = 'adjacent';
+                    document.getElementById('btn-adjacent').classList.add('active');
+                    document.getElementById('btn-modal').classList.remove('active');
+                }
+            }
+
             // Cleanup existing menu and re-render with new mode
             if (window.PandaMenu) {
                 window.PandaMenu.cleanup();
-                window.PandaMenu.render(null, mode, mode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, currentDisplayStyle);
+                window.PandaMenu.render(null, mode, mode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, currentDisplayStyle, currentMenuSize);
             }
 
             updateUrlParams();
@@ -530,7 +612,27 @@
             // Cleanup existing menu and re-render with new display style
             if (window.PandaMenu) {
                 window.PandaMenu.cleanup();
-                window.PandaMenu.render(null, currentMode, currentMode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, style);
+                window.PandaMenu.render(null, currentMode, currentMode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, style, currentMenuSize);
+            }
+
+            updateUrlParams();
+        }
+
+        function setMenuSize(size) {
+            if (size === currentMenuSize) return;
+
+            currentMenuSize = size;
+
+            // Update button states
+            document.getElementById('btn-compact').classList.toggle('active', size === 'compact');
+            document.getElementById('btn-normal').classList.toggle('active', size === 'normal');
+            document.getElementById('btn-large').classList.toggle('active', size === 'large');
+            document.getElementById('btn-xlarge').classList.toggle('active', size === 'xlarge');
+
+            // Cleanup existing menu and re-render with new size
+            if (window.PandaMenu) {
+                window.PandaMenu.cleanup();
+                window.PandaMenu.render(null, currentMode, currentMode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined, currentDisplayStyle, size);
             }
 
             updateUrlParams();
@@ -559,7 +661,7 @@
             // Re-render sidebar with new side
             if (window.PandaMenu && currentMode === 'sidebar') {
                 window.PandaMenu.cleanup();
-                window.PandaMenu.render(null, 'sidebar', { position: currentPosition, side: side }, currentDisplayStyle);
+                window.PandaMenu.render(null, 'sidebar', { position: currentPosition, side: side }, currentDisplayStyle, currentMenuSize);
             }
 
             updateUrlParams();
@@ -574,7 +676,7 @@
             // Re-render sidebar with new position
             if (window.PandaMenu && currentMode === 'sidebar') {
                 window.PandaMenu.cleanup();
-                window.PandaMenu.render(null, 'sidebar', { position: position, side: currentSide }, currentDisplayStyle);
+                window.PandaMenu.render(null, 'sidebar', { position: position, side: currentSide }, currentDisplayStyle, currentMenuSize);
             }
 
             updateUrlParams();

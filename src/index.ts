@@ -1,4 +1,4 @@
-import { getAttachSelector, getMenuMode, getSidebarConfig, getDisplayStyle } from './config/hostStyles';
+import { getAttachSelector, getMenuMode, getSidebarConfig, getDisplayStyle, getMenuSize } from './config/hostStyles';
 import { injectHostStyles, pollAndRender, renderMenu, cleanupRender } from './menu';
 import { PandaMenuContext } from './types/context';
 
@@ -33,9 +33,10 @@ function renderPandaMenu(pandaMenuCtx: PandaMenuContext) {
   // Inject host page styles based on domain patterns
   injectHostStyles();
 
-  // Determine menu mode and display style (context override > host config)
+  // Determine menu mode, display style, and size (context override > host config)
   const menuMode = pandaMenuCtx.menuMode || getMenuMode();
   const displayStyle = getDisplayStyle();
+  const menuSize = getMenuSize();
 
   switch (menuMode) {
     case 'attached': {
@@ -46,19 +47,22 @@ function renderPandaMenu(pandaMenuCtx: PandaMenuContext) {
         pollAndRender(attachSelector);
       } else {
         console.warn('[panda-menu] Attached mode specified but no attachSelector found, falling back to floating');
-        renderMenu(null, 'floating', undefined, displayStyle);
+        renderMenu(null, 'floating', undefined, displayStyle, menuSize);
       }
       break;
     }
     case 'sidebar': {
       const sidebarConfig = getSidebarConfig();
-      renderMenu(null, 'sidebar', sidebarConfig, displayStyle);
+      renderMenu(null, 'sidebar', sidebarConfig, displayStyle, menuSize);
       break;
     }
+    case 'hidden':
+      renderMenu(null, 'hidden', undefined, displayStyle, menuSize);
+      break;
     case 'floating':
     default:
       if (!pandaMenuCtx.skipRender) {
-        renderMenu(null, 'floating', undefined, displayStyle);
+        renderMenu(null, 'floating', undefined, displayStyle, menuSize);
       }
       break;
   }
