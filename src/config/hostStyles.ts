@@ -1,13 +1,30 @@
 export type ColorMode = 'light' | 'dark' | '';
+export type MenuMode = 'floating' | 'sidebar' | 'attached';
+
+export interface SidebarConfig {
+  /** Position along the edge - defaults to 'center'
+   * For left/right sides: 'top' | 'center' | 'bottom' (vertical)
+   * For top/bottom sides: 'left' | 'center' | 'right' (horizontal)
+   */
+  position?: 'top' | 'center' | 'bottom' | 'left' | 'right';
+  /** Which side of the screen - defaults to 'left' */
+  side?: 'left' | 'right' | 'top' | 'bottom';
+  /** Width/height of the collapsed sidebar in pixels - defaults to 16 */
+  collapsedWidth?: number;
+}
 
 export interface HostRule {
   pattern: RegExp;
   hostCss?: string;
   menuCss?: string;
   defaultColorMode?: ColorMode;
-  /** CSS selector to attach menu to an existing DOM element instead of rendering floating button */
+  /** Menu display mode - defaults to 'floating' if not specified */
+  menuMode?: MenuMode;
+  /** CSS selector to attach menu to an existing DOM element (only used when menuMode is 'attached') */
   attachTo?: string;
   attachParent?: number;
+  /** Sidebar-specific configuration (only used when menuMode is 'sidebar') */
+  sidebarConfig?: SidebarConfig;
 }
 
 const HOST_RULES: HostRule[] = [
@@ -192,5 +209,29 @@ export function getAttachParent(): number {
     }
   }
   return 0;
+}
+
+export function getMenuMode(): MenuMode {
+  const rules = getHostConfig();
+  for (const rule of rules) {
+    if (rule.menuMode) {
+      return rule.menuMode;
+    }
+    // Legacy support: if attachTo is defined without menuMode, treat as 'attached'
+    if (rule.attachTo) {
+      return 'attached';
+    }
+  }
+  return 'floating';
+}
+
+export function getSidebarConfig(): SidebarConfig {
+  const rules = getHostConfig();
+  for (const rule of rules) {
+    if (rule.sidebarConfig) {
+      return rule.sidebarConfig;
+    }
+  }
+  return {};
 }
 

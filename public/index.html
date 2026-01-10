@@ -30,11 +30,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-align: center;
         }
         .subtitle {
             color: #a1a1aa;
             margin-bottom: 32px;
             font-size: 1.125rem;
+            text-align: center;
         }
         .card {
             background: rgba(255, 255, 255, 0.05);
@@ -124,12 +126,207 @@
         .copy-btn:hover {
             background: rgba(96, 165, 250, 0.3);
         }
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+        }
+        .toggle-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a1a1aa;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .toggle-btn.active {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.4);
+            color: #60a5fa;
+        }
+        .toggle-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        .toggle-btn .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .toggle-btn.small {
+            padding: 8px 12px;
+        }
+        .toggle-btn.small svg {
+            width: 20px;
+            height: 20px;
+        }
+        .sidebar-options {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .options-label {
+            font-size: 0.75rem;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        .position-group {
+            gap: 6px;
+        }
+        .open-menu-btn {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .open-menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.4);
+        }
+        .open-menu-btn:active {
+            transform: translateY(0);
+        }
+        .kbd {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Panda Menu</h1>
         <p class="subtitle">Cross-service navigation menu for ethPandaOps tools</p>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 32px;">
+            <button onclick="window.PandaMenu?.open()" class="open-menu-btn">Open Menu</button>
+            <span style="color: #a1a1aa; font-size: 0.875rem;">
+                or press <kbd class="kbd">Ctrl+M</kbd> to toggle
+            </span>
+        </div>
+
+        <div class="card">
+            <h2>Menu Style</h2>
+            <div class="toggle-group">
+                <button id="btn-floating" class="toggle-btn active" onclick="setMenuMode('floating')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="8" height="8" rx="2"/>
+                        <path d="M14 7h7M14 12h7M14 17h7M3 14h7M3 19h7"/>
+                    </svg>
+                    <span class="label">Floating</span>
+                </button>
+                <button id="btn-sidebar" class="toggle-btn" onclick="setMenuMode('sidebar')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="4" height="18" rx="1"/>
+                        <path d="M10 8h11M10 12h11M10 16h11"/>
+                    </svg>
+                    <span class="label">Sidebar</span>
+                </button>
+            </div>
+            <div id="sidebar-options" class="sidebar-options" style="display: none;">
+                <p class="options-label">Side</p>
+                <div class="toggle-group position-group">
+                    <button id="btn-side-left" class="toggle-btn small active" onclick="setSidebarSide('left')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="4" height="18" rx="1"/>
+                            <path d="M10 8h11M10 12h11M10 16h11"/>
+                        </svg>
+                        <span class="label">Left</span>
+                    </button>
+                    <button id="btn-side-top" class="toggle-btn small" onclick="setSidebarSide('top')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="4" rx="1"/>
+                            <path d="M5 10v11M12 10v11M19 10v11"/>
+                        </svg>
+                        <span class="label">Top</span>
+                    </button>
+                    <button id="btn-side-right" class="toggle-btn small" onclick="setSidebarSide('right')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="17" y="3" width="4" height="18" rx="1"/>
+                            <path d="M3 8h11M3 12h11M3 16h11"/>
+                        </svg>
+                        <span class="label">Right</span>
+                    </button>
+                    <button id="btn-side-bottom" class="toggle-btn small" onclick="setSidebarSide('bottom')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="17" width="18" height="4" rx="1"/>
+                            <path d="M5 3v11M12 3v11M19 3v11"/>
+                        </svg>
+                        <span class="label">Bottom</span>
+                    </button>
+                </div>
+                <p class="options-label" style="margin-top: 12px;">Position</p>
+                <!-- Vertical position options (for left/right sides) -->
+                <div id="vertical-positions" class="toggle-group position-group">
+                    <button id="btn-pos-top" class="toggle-btn small" onclick="setSidebarPosition('top')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="4" height="6" rx="1"/>
+                            <path d="M10 5h11M10 12h11M10 19h11"/>
+                        </svg>
+                        <span class="label">Top</span>
+                    </button>
+                    <button id="btn-pos-center" class="toggle-btn small active" onclick="setSidebarPosition('center')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="9" width="4" height="6" rx="1"/>
+                            <path d="M10 5h11M10 12h11M10 19h11"/>
+                        </svg>
+                        <span class="label">Center</span>
+                    </button>
+                    <button id="btn-pos-bottom" class="toggle-btn small" onclick="setSidebarPosition('bottom')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="15" width="4" height="6" rx="1"/>
+                            <path d="M10 5h11M10 12h11M10 19h11"/>
+                        </svg>
+                        <span class="label">Bottom</span>
+                    </button>
+                </div>
+                <!-- Horizontal position options (for top side) -->
+                <div id="horizontal-positions" class="toggle-group position-group" style="display: none;">
+                    <button id="btn-pos-left" class="toggle-btn small" onclick="setSidebarPosition('left')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="6" height="4" rx="1"/>
+                            <path d="M5 10v11M12 10v11M19 10v11"/>
+                        </svg>
+                        <span class="label">Left</span>
+                    </button>
+                    <button id="btn-pos-middle" class="toggle-btn small active" onclick="setSidebarPosition('center')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="3" width="6" height="4" rx="1"/>
+                            <path d="M5 10v11M12 10v11M19 10v11"/>
+                        </svg>
+                        <span class="label">Middle</span>
+                    </button>
+                    <button id="btn-pos-right" class="toggle-btn small" onclick="setSidebarPosition('right')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="15" y="3" width="6" height="4" rx="1"/>
+                            <path d="M5 10v11M12 10v11M19 10v11"/>
+                        </svg>
+                        <span class="label">Right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <div class="card">
             <h2>Latest Release</h2>
@@ -217,6 +414,137 @@
         }
 
         loadVersionInfo();
+
+        // Read initial state from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentMode = urlParams.get('mode') || 'floating';
+        let currentPosition = urlParams.get('position') || 'center';
+        let currentSide = urlParams.get('side') || 'left';
+
+        // Validate params
+        if (!['floating', 'sidebar'].includes(currentMode)) currentMode = 'floating';
+        if (!['left', 'top', 'right', 'bottom'].includes(currentSide)) currentSide = 'left';
+        if (!['top', 'center', 'bottom', 'left', 'right'].includes(currentPosition)) currentPosition = 'center';
+
+        function updateUrlParams() {
+            const params = new URLSearchParams();
+            params.set('mode', currentMode);
+            if (currentMode === 'sidebar') {
+                params.set('side', currentSide);
+                params.set('position', currentPosition);
+            }
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        function initializeUI() {
+            // Set initial button states
+            document.getElementById('btn-floating').classList.toggle('active', currentMode === 'floating');
+            document.getElementById('btn-sidebar').classList.toggle('active', currentMode === 'sidebar');
+
+            // Show/hide sidebar options
+            document.getElementById('sidebar-options').style.display = currentMode === 'sidebar' ? 'block' : 'none';
+
+            // Set side buttons
+            document.getElementById('btn-side-left').classList.toggle('active', currentSide === 'left');
+            document.getElementById('btn-side-top').classList.toggle('active', currentSide === 'top');
+            document.getElementById('btn-side-right').classList.toggle('active', currentSide === 'right');
+            document.getElementById('btn-side-bottom').classList.toggle('active', currentSide === 'bottom');
+
+            // Show appropriate position options
+            const isHorizontal = currentSide === 'top' || currentSide === 'bottom';
+            document.getElementById('vertical-positions').style.display = isHorizontal ? 'none' : 'flex';
+            document.getElementById('horizontal-positions').style.display = isHorizontal ? 'flex' : 'none';
+
+            // Set position buttons
+            updatePositionButtons();
+
+            // Render menu with initial settings
+            if (window.PandaMenu) {
+                window.PandaMenu.cleanup();
+                window.PandaMenu.render(null, currentMode, currentMode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined);
+            }
+        }
+
+        // Initialize on load
+        initializeUI();
+
+        function setMenuMode(mode) {
+            if (mode === currentMode) return;
+
+            currentMode = mode;
+
+            // Update button states
+            document.getElementById('btn-floating').classList.toggle('active', mode === 'floating');
+            document.getElementById('btn-sidebar').classList.toggle('active', mode === 'sidebar');
+
+            // Show/hide sidebar options
+            document.getElementById('sidebar-options').style.display = mode === 'sidebar' ? 'block' : 'none';
+
+            // Cleanup existing menu and re-render with new mode
+            if (window.PandaMenu) {
+                window.PandaMenu.cleanup();
+                window.PandaMenu.render(null, mode, mode === 'sidebar' ? { position: currentPosition, side: currentSide } : undefined);
+            }
+
+            updateUrlParams();
+        }
+
+        function setSidebarSide(side) {
+            if (side === currentSide) return;
+
+            currentSide = side;
+
+            // Update side button states
+            document.getElementById('btn-side-left').classList.toggle('active', side === 'left');
+            document.getElementById('btn-side-top').classList.toggle('active', side === 'top');
+            document.getElementById('btn-side-right').classList.toggle('active', side === 'right');
+            document.getElementById('btn-side-bottom').classList.toggle('active', side === 'bottom');
+
+            // Show appropriate position options
+            const isHorizontal = side === 'top' || side === 'bottom';
+            document.getElementById('vertical-positions').style.display = isHorizontal ? 'none' : 'flex';
+            document.getElementById('horizontal-positions').style.display = isHorizontal ? 'flex' : 'none';
+
+            // Reset position to center when switching sides
+            currentPosition = 'center';
+            updatePositionButtons();
+
+            // Re-render sidebar with new side
+            if (window.PandaMenu && currentMode === 'sidebar') {
+                window.PandaMenu.cleanup();
+                window.PandaMenu.render(null, 'sidebar', { position: currentPosition, side: side });
+            }
+
+            updateUrlParams();
+        }
+
+        function setSidebarPosition(position) {
+            if (position === currentPosition) return;
+
+            currentPosition = position;
+            updatePositionButtons();
+
+            // Re-render sidebar with new position
+            if (window.PandaMenu && currentMode === 'sidebar') {
+                window.PandaMenu.cleanup();
+                window.PandaMenu.render(null, 'sidebar', { position: position, side: currentSide });
+            }
+
+            updateUrlParams();
+        }
+
+        function updatePositionButtons() {
+            // Vertical position buttons
+            document.getElementById('btn-pos-top').classList.toggle('active', currentPosition === 'top');
+            document.getElementById('btn-pos-center').classList.toggle('active', currentPosition === 'center');
+            document.getElementById('btn-pos-bottom').classList.toggle('active', currentPosition === 'bottom');
+
+            // Horizontal position buttons
+            document.getElementById('btn-pos-left').classList.toggle('active', currentPosition === 'left');
+            document.getElementById('btn-pos-middle').classList.toggle('active', currentPosition === 'center');
+            document.getElementById('btn-pos-right').classList.toggle('active', currentPosition === 'right');
+        }
     </script>
 </body>
 </html>

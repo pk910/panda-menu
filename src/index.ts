@@ -1,4 +1,4 @@
-import { getAttachSelector } from './config/hostStyles';
+import { getAttachSelector, getMenuMode, getSidebarConfig } from './config/hostStyles';
 import { injectHostStyles, pollAndRender, renderMenu, cleanupRender } from './menu';
 import { PandaMenuContext } from './types/context';
 
@@ -33,13 +33,33 @@ function renderPandaMenu(pandaMenuCtx: PandaMenuContext) {
   // Inject host page styles based on domain patterns
   injectHostStyles();
 
-  // Check if we should attach to an existing element
-  const attachSelector = typeof pandaMenuCtx.attachSelector === 'string' ? pandaMenuCtx.attachSelector : getAttachSelector();
+  // Determine menu mode (context override > host config)
+  const menuMode = pandaMenuCtx.menuMode || getMenuMode();
 
-  if (attachSelector) {
-    pollAndRender(attachSelector);
-  } else if (!pandaMenuCtx.skipRender) {
-    renderMenu(null);
+  switch (menuMode) {
+    case 'attached': {
+      const attachSelector = typeof pandaMenuCtx.attachSelector === 'string'
+        ? pandaMenuCtx.attachSelector
+        : getAttachSelector();
+      if (attachSelector) {
+        pollAndRender(attachSelector);
+      } else {
+        console.warn('[panda-menu] Attached mode specified but no attachSelector found, falling back to floating');
+        renderMenu(null, 'floating');
+      }
+      break;
+    }
+    case 'sidebar': {
+      const sidebarConfig = getSidebarConfig();
+      renderMenu(null, 'sidebar', sidebarConfig);
+      break;
+    }
+    case 'floating':
+    default:
+      if (!pandaMenuCtx.skipRender) {
+        renderMenu(null, 'floating');
+      }
+      break;
   }
 }
 
