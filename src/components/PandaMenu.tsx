@@ -43,7 +43,7 @@ function ModalDropdown({ menuWidth, loading, error, sortedCategories, currentLoc
     <div className="fixed inset-0 z-[999999] flex items-center justify-center pointer-events-none">
       <div
         className="pointer-events-auto max-h-[80vh] overflow-hidden rounded-lg border border-menu-border bg-menu-bg"
-        style={{ width: menuWidth, boxShadow: MODAL_BOX_SHADOW }}
+        style={{ width: menuWidth, boxShadow: MODAL_BOX_SHADOW, maxWidth: 'calc(100vw - (var(--spacing) * 8))' }}
       >
         <MenuDropdown
           loading={loading}
