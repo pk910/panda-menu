@@ -26,7 +26,7 @@ module.exports = (env, argv) => {
   ];
 
   return {
-    entry: './src/index.tsx',
+    entry: './src/index.ts',
     output: {
       filename: 'panda-menu.js',
       path: path.resolve(__dirname, 'dist'),

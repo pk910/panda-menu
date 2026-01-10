@@ -1,8 +1,10 @@
+import { createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PandaMenu, PandaMenuHandle } from './components/PandaMenu';
-import { getMenuCss, getAttachSelector, getAttachParent, getHostCss } from './config/hostStyles';
+import { getMenuCss, getAttachParent, getHostCss } from './config/hostStyles';
+import { PandaMenuContext, RenderResult } from './types/context';
+
 import styles from './styles/index.css?inline';
-import { createRef, RefObject } from 'react';
 
 const POLL_INTERVAL = 50; // ms
 const POLL_TIMEOUT = 5000; // ms
@@ -11,18 +13,11 @@ const MAX_ATTEMPTS = POLL_TIMEOUT / POLL_INTERVAL;
 const MENU_ELEMENT_ID = 'panda-menu-root';
 const STYLE_ELEMENT_ID = 'panda-menu-host-styles';
 
-interface RenderResult {
-  hostElement: HTMLElement;
-  root: ReturnType<typeof createRoot>;
-  menuRef: RefObject<PandaMenuHandle | null>;
-  attachTarget: HTMLElement | null;
-  clickHandler: ((e: MouseEvent) => void) | null;
-}
-
+let pandaMenuCtx: PandaMenuContext = (window as any).PandaMenu = (window as any).PandaMenu || {};
 let currentRender: RenderResult | null = null;
 let removalObserver: MutationObserver | null = null;
 
-function cleanup() {
+export function cleanupRender() {
   if (currentRender) {
     // Remove click handler from attach target
     if (currentRender.attachTarget && currentRender.clickHandler) {
@@ -32,7 +27,7 @@ function cleanup() {
     currentRender.root.unmount();
     // Remove host element
     currentRender.hostElement.remove();
-    currentRender = null;
+    pandaMenuCtx.currentRender = currentRender = null;
   }
   if (removalObserver) {
     removalObserver.disconnect();
@@ -40,7 +35,7 @@ function cleanup() {
   }
 }
 
-function renderMenu(attachTarget: HTMLElement | null): RenderResult {
+export function renderMenu(attachTarget: HTMLElement | null) {
   const hostElement = document.createElement('div');
   hostElement.id = MENU_ELEMENT_ID;
 
@@ -98,10 +93,13 @@ function renderMenu(attachTarget: HTMLElement | null): RenderResult {
     root.render(<PandaMenu ref={menuRef} />);
   }
 
-  return { hostElement, root, menuRef, attachTarget, clickHandler };
+  pandaMenuCtx.open = () => menuRef.current?.open();
+  pandaMenuCtx.close = () => menuRef.current?.close();
+  pandaMenuCtx.toggle = () => menuRef.current?.toggle();
+  pandaMenuCtx.currentRender = currentRender = { hostElement, root, menuRef, attachTarget, clickHandler };
 }
 
-function setupRemovalObserver(attachSelector: string) {
+export function setupRemovalObserver(attachSelector: string) {
   // Watch for removal of our host element or the attach target
   removalObserver = new MutationObserver(() => {
     if (!currentRender) return;
@@ -115,7 +113,7 @@ function setupRemovalObserver(attachSelector: string) {
 
     if (!hostStillInDOM || !targetStillInDOM) {
       // Our elements were removed, clean up and re-attach
-      cleanup();
+      cleanupRender();
       // Re-poll for the element
       pollAndRender(attachSelector);
     }
@@ -128,7 +126,7 @@ function setupRemovalObserver(attachSelector: string) {
   });
 }
 
-function pollAndRender(attachSelector: string) {
+export function pollAndRender(attachSelector: string) {
   let attempts = 0;
 
   const pollForElement = () => {
@@ -148,7 +146,7 @@ function pollAndRender(attachSelector: string) {
         }
       }
 
-      currentRender = renderMenu(attachTarget);
+      renderMenu(attachTarget);
       setupRemovalObserver(attachSelector);
     } else if (attempts < MAX_ATTEMPTS) {
       // Keep polling
@@ -157,7 +155,7 @@ function pollAndRender(attachSelector: string) {
     } else {
       // Timeout, fall back to floating button mode
       console.warn(`[panda-menu] Could not find element "${attachSelector}" after ${POLL_TIMEOUT}ms, using floating button`);
-      currentRender = renderMenu(null);
+      renderMenu(null);
       // No observer needed for floating mode
     }
   };
@@ -165,7 +163,7 @@ function pollAndRender(attachSelector: string) {
   pollForElement();
 }
 
-function injectHostStyles(): void {
+export function injectHostStyles(): void {
   if (document.getElementById(STYLE_ELEMENT_ID)) {
     return;
   }
@@ -179,30 +177,4 @@ ${getHostCss()}
 `;
 
   document.head.appendChild(styleElement);
-}
-
-function initPandaMenu() {
-  if (document.getElementById('panda-menu-root')) {
-    return;
-  }
-
-  // Inject host page styles based on domain patterns
-  injectHostStyles();
-
-  // Check if we should attach to an existing element
-  const attachSelector = getAttachSelector();
-
-  if (attachSelector) {
-    pollAndRender(attachSelector);
-  } else {
-    // No attach selector, render immediately in floating mode
-    currentRender = renderMenu(null);
-  }
-}
-
-// Wait for DOM to be ready before initializing
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPandaMenu);
-} else {
-  initPandaMenu();
 }
