@@ -11,6 +11,8 @@ interface MenuDropdownProps {
   currentLocation: CurrentLocation;
   onClose: () => void;
   onRetry: () => void;
+  /** Hide the header with logo and close button (used in sidebar mode) */
+  hideHeader?: boolean;
 }
 
 export function MenuDropdown({
@@ -20,33 +22,36 @@ export function MenuDropdown({
   currentLocation,
   onClose,
   onRetry,
+  hideHeader = false,
 }: MenuDropdownProps) {
   return (
     <>
-      <div className="flex items-center justify-between border-b border-menu-border bg-menu-bg-secondary px-4 py-3">
-        <div className="flex items-center gap-2">
-          <img src={LOGO_DATA_URL} alt="" className="size-6" />
-          <span className="font-semibold text-menu-text">ethPandaOps</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="rounded-xs p-1 text-menu-text-muted transition-colors hover:bg-menu-hover hover:text-menu-text"
-        >
-          <svg
-            className="size-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+      {!hideHeader && (
+        <div className="flex items-center justify-between border-b border-menu-border bg-menu-bg-secondary px-4 py-3">
+          <div className="flex items-center gap-2">
+            <img src={LOGO_DATA_URL} alt="" className="size-6" />
+            <span className="font-semibold text-menu-text">ethPandaOps</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xs p-1 text-menu-text-muted transition-colors hover:bg-menu-hover hover:text-menu-text"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
+            <svg
+              className="size-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <div className="max-h-[70vh] overflow-y-auto">
         <div className="border-b border-menu-border p-2">

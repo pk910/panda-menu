@@ -1,14 +1,19 @@
-import { getAttachSelector } from './config/hostStyles';
+import { getAttachSelector, getMenuMode, getSidebarConfig, getDisplayStyle, getMenuSize } from './config/hostStyles';
 import { injectHostStyles, pollAndRender, renderMenu, cleanupRender } from './menu';
 import { PandaMenuContext } from './types/context';
 
 function initPandaMenu() {
+  // Read pre-init config from window.PandaMenuConfig
+  const config: Partial<PandaMenuContext> = (window as any).PandaMenuConfig || {};
+
+  // Set up runtime API on window.PandaMenu
   let pandaMenuCtx: PandaMenuContext = (window as any).PandaMenu = (window as any).PandaMenu || {};
   if (pandaMenuCtx.initialized) {
     return;
   }
 
-  Object.assign(pandaMenuCtx, {
+  // Merge config into context
+  Object.assign(pandaMenuCtx, config, {
     initialized: true,
     render: renderMenu,
     attach: pollAndRender,
@@ -33,13 +38,38 @@ function renderPandaMenu(pandaMenuCtx: PandaMenuContext) {
   // Inject host page styles based on domain patterns
   injectHostStyles();
 
-  // Check if we should attach to an existing element
-  const attachSelector = typeof pandaMenuCtx.attachSelector === 'string' ? pandaMenuCtx.attachSelector : getAttachSelector();
+  // Determine menu mode, display style, and size (context override > host config)
+  const menuMode = pandaMenuCtx.menuMode || getMenuMode();
+  const displayStyle = pandaMenuCtx.displayStyle || getDisplayStyle();
+  const menuSize = pandaMenuCtx.menuSize || getMenuSize();
 
-  if (attachSelector) {
-    pollAndRender(attachSelector);
-  } else if (!pandaMenuCtx.skipRender) {
-    renderMenu(null);
+  switch (menuMode) {
+    case 'attached': {
+      const attachSelector = typeof pandaMenuCtx.attachSelector === 'string'
+        ? pandaMenuCtx.attachSelector
+        : getAttachSelector();
+      if (attachSelector) {
+        pollAndRender(attachSelector);
+      } else {
+        console.warn('[panda-menu] Attached mode specified but no attachSelector found, falling back to floating');
+        renderMenu(null, 'floating', undefined, displayStyle, menuSize);
+      }
+      break;
+    }
+    case 'sidebar': {
+      const sidebarConfig = pandaMenuCtx.sidebarConfig || getSidebarConfig();
+      renderMenu(null, 'sidebar', sidebarConfig, displayStyle, menuSize);
+      break;
+    }
+    case 'hidden':
+      renderMenu(null, 'hidden', undefined, displayStyle, menuSize);
+      break;
+    case 'floating':
+    default:
+      if (!pandaMenuCtx.skipRender) {
+        renderMenu(null, 'floating', undefined, displayStyle, menuSize);
+      }
+      break;
   }
 }
 

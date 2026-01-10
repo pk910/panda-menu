@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PandaMenu, PandaMenuHandle } from './components/PandaMenu';
-import { getMenuCss, getAttachParent, getHostCss } from './config/hostStyles';
+import { getMenuCss, getAttachParent, getHostCss, MenuMode, SidebarConfig, DisplayStyle, MenuSize } from './config/hostStyles';
 import { PandaMenuContext, RenderResult } from './types/context';
 
 import styles from './styles/index.css?inline';
@@ -35,7 +35,13 @@ export function cleanupRender() {
   }
 }
 
-export function renderMenu(attachTarget: HTMLElement | null) {
+export function renderMenu(
+  attachTarget: HTMLElement | null,
+  mode: MenuMode = 'floating',
+  sidebarConfig?: SidebarConfig,
+  displayStyle: DisplayStyle = 'adjacent',
+  menuSize: MenuSize = 'normal'
+) {
   const hostElement = document.createElement('div');
   hostElement.id = MENU_ELEMENT_ID;
 
@@ -75,10 +81,10 @@ export function renderMenu(attachTarget: HTMLElement | null) {
 
   let clickHandler: ((e: MouseEvent) => void) | null = null;
 
-  if (attachTarget) {
+  if (mode === 'attached' && attachTarget) {
     // Render in attached mode with target height for positioning
     const targetHeight = attachTarget.offsetHeight;
-    root.render(<PandaMenu ref={menuRef} attached={true} attachTargetHeight={targetHeight} />);
+    root.render(<PandaMenu ref={menuRef} mode="attached" attachTargetHeight={targetHeight} displayStyle={displayStyle} menuSize={menuSize} />);
 
     // Attach click handler to the target element
     attachTarget.style.cursor = 'pointer';
@@ -88,9 +94,15 @@ export function renderMenu(attachTarget: HTMLElement | null) {
       menuRef.current?.toggle();
     };
     attachTarget.addEventListener('click', clickHandler);
+  } else if (mode === 'sidebar') {
+    // Render in sidebar mode
+    root.render(<PandaMenu ref={menuRef} mode="sidebar" sidebarConfig={sidebarConfig} displayStyle={displayStyle} menuSize={menuSize} />);
+  } else if (mode === 'hidden') {
+    // Hidden mode: no visible button, keyboard toggle only
+    root.render(<PandaMenu ref={menuRef} mode="hidden" displayStyle={displayStyle} menuSize={menuSize} />);
   } else {
     // Default floating button mode
-    root.render(<PandaMenu ref={menuRef} />);
+    root.render(<PandaMenu ref={menuRef} mode="floating" displayStyle={displayStyle} menuSize={menuSize} />);
   }
 
   pandaMenuCtx.open = () => menuRef.current?.open();

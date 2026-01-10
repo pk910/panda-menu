@@ -73,5 +73,14 @@ module.exports = (env, argv) => {
     optimization: {
       minimize: isProduction,
     },
+    devServer: {
+      static: {
+        directory: path.resolve(__dirname, 'dist'),
+      },
+      port: 8080,
+      open: true,
+      hot: true,
+      liveReload: true,
+    },
   };
 };
